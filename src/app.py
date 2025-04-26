@@ -40,6 +40,9 @@ def main():
     elif current_step == "select_cuisine":
         from src.pages import select_cuisine
         select_cuisine.show()
+    elif current_step == "select_mood":
+        from src.pages import select_mood
+        select_mood.show()
     elif current_step == "select_cook":
         from src.pages import select_cook
         select_cook.show()

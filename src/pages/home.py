@@ -14,7 +14,7 @@ def show():
     )
     
     # 다음 단계로 이동하는 버튼
-    if st.button("다음 단계로", use_container_width=True, type="primary"):
+    if st.button("위치설정 완료", use_container_width=True, type="primary"):
         if not region:
             st.error("지역을 입력해주세요!")
             return

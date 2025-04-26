@@ -25,7 +25,7 @@ class GPTClient:
         ...     "taste":   "매콤한",
         ...     "cuisine": "중식",
         ...     "cook":    "볶음",
-        ...     "emotion": "스트레스를 풀고 싶다"   # optional
+        ...     "mood":    "혼밥"   # optional
         ... })
     """
 
@@ -47,7 +47,7 @@ class GPTClient:
                 "taste"  : "매콤한",
                 "cuisine": "중식",
                 "cook"   : "볶음",
-                "emotion": "스트레스를 풀고 싶다"  # optional
+                "mood"   : "혼밥"  # optional
             }
 
         Returns
@@ -92,8 +92,8 @@ class GPTClient:
             f"음식 장르: {t['cuisine']}",
             f"조리 방식: {t['cook']}",
         ]
-        if t.get("emotion"):
-            user_lines.append(f"감정: {t['emotion']}")
+        if t.get("mood"):
+            user_lines.append(f"상황/분위기: {t['mood']}")
         user_lines.append("\n조건에 가장 어울리는 음식 세 가지를 음식 이름만 줄바꿈해서 알려줘.")
 
         try:
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         "taste": "매콤한",
         "cuisine": "중식",
         "cook": "볶음",
-        "emotion": "스트레스를 풀고 싶다",
+        "mood": "혼밥",
     }
 
     client = GPTClient()
