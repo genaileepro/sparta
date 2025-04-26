@@ -1,0 +1,28 @@
+# 환경 변수 파일
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python 캐시 파일
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 로그 파일
+*.log
+
+# 가상환경
+venv/
+env/
+ENV/
+
+# IDE 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Streamlit 관련 캐시
+.streamlit/ 
