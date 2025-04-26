@@ -34,6 +34,8 @@ class GPTClient:
         if not self.api_key:
             raise RuntimeError("OPENAI_API_KEY 누락")
         self.model = model
+        
+        # 가장 기본적인 초기화 방식 사용 - 매개변수 최소화
         self.client = OpenAI(api_key=self.api_key)
 
     # ------------------------------------------------------------------ #
