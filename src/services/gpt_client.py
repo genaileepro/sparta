@@ -12,7 +12,9 @@ import urllib.parse
 from pprint import pprint
 from typing import Dict, List
 
-from openai import OpenAI
+import openai
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 class GPTClient:
@@ -34,25 +36,7 @@ class GPTClient:
         if not self.api_key:
             raise RuntimeError("OPENAI_API_KEY 누락")
         self.model = model
-        
-        # proxies 매개변수 문제 해결을 위한 초기화 방식 변경
-        try:
-            # 환경 변수에서 프록시 설정을 제거하여 클라이언트 초기화
-            http_proxy = os.environ.pop('HTTP_PROXY', None)
-            https_proxy = os.environ.pop('HTTPS_PROXY', None)
-            
-            # 기본 매개변수만으로 클라이언트 초기화
-            self.client = OpenAI(api_key=self.api_key)
-            
-            # 환경 변수 복원 (필요한 경우)
-            if http_proxy:
-                os.environ['HTTP_PROXY'] = http_proxy
-            if https_proxy:
-                os.environ['HTTPS_PROXY'] = https_proxy
-        except Exception as e:
-            print(f"OpenAI 클라이언트 초기화 중 오류: {e}")
-            # 대체 초기화 방법 시도
-            self.client = OpenAI(api_key=self.api_key)
+        self.client = OpenAI(api_key=self.api_key)
 
     # ------------------------------------------------------------------ #
     def recommend(self, tokens: Dict[str, str]) -> Dict:
@@ -112,7 +96,7 @@ class GPTClient:
         ]
         if t.get("mood"):
             user_lines.append(f"상황/분위기: {t['mood']}")
-        user_lines.append("\n조건에 가장 어울리는 음식 세 가지를 음식 이름만 줄바꿈해서 알려줘.")
+        user_lines.append("\n조건에 가장 어울리는 음식 6 가지를 음식 이름만 줄바꿈해서 알려줘.")
 
         try:
             resp = self.client.chat.completions.create(
