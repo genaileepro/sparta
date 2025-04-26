@@ -12,7 +12,9 @@ import urllib.parse
 from pprint import pprint
 from typing import Dict, List
 
-from openai import OpenAI
+import openai
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 class GPTClient:
