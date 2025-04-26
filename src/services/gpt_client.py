@@ -126,4 +126,4 @@ if __name__ == "__main__":
 
     client = GPTClient()
     result = client.recommend(sample_tokens)
-    pprint(result)
+    print(result)

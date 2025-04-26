@@ -1,6 +1,50 @@
-# 🍽️ 먹깨비
+# 먹깨비 (Meokkaebi)
 
-먹깨비는 사용자의 음식 취향을 클릭 몇 번으로 파악하여 맞춤형 음식과 식당을 추천해주는 Streamlit 애플리케이션입니다.
+맛집 추천 AI 서비스 - 당신의 취향을 분석해 딱 맞는 음식을 추천해 드립니다!
+
+## 배포 방법
+
+### Streamlit Cloud 배포
+
+1. [Streamlit Cloud](https://streamlit.io/cloud)에 가입하고 로그인합니다.
+2. "New app" 버튼을 클릭합니다.
+3. GitHub 저장소와 브랜치를 선택합니다.
+4. 메인 파일로 `app.py`를 지정합니다.
+5. "Advanced settings"에서 다음 환경 변수를 설정합니다:
+    - `OPENAI_API_KEY`: OpenAI API 키
+
+### 로컬 실행 방법
+
+1. 저장소를 클론합니다:
+
+    ```
+    git clone [저장소 URL]
+    cd [프로젝트 폴더]
+    ```
+
+2. 가상 환경을 생성하고 활성화합니다:
+
+    ```
+    python -m venv venv
+    source venv/bin/activate  # Windows: venv\Scripts\activate
+    ```
+
+3. 의존성을 설치합니다:
+
+    ```
+    pip install -r requirements.txt
+    ```
+
+4. `.env` 파일을 생성하고 다음 환경 변수를 설정합니다:
+
+    ```
+    OPENAI_API_KEY=your_openai_api_key
+    ```
+
+5. 애플리케이션을 실행합니다:
+    ```
+    streamlit run app.py
+    ```
 
 ## 기능
 
@@ -9,44 +53,6 @@
 -   음식 장르 선택 (8가지 옵션)
 -   조리방식 선택 (7가지 옵션)
 -   GPT 기반 개인화된 음식 및 식당 추천
-
-## 설치 방법
-
-1. 저장소 클론
-
-```bash
-git clone https://github.com/yourusername/meokkaebi.git
-cd meokkaebi
-```
-
-2. 필요한 패키지 설치
-
-```bash
-pip install -r requirements.txt
-```
-
-3. `.env` 파일 생성 및 API 키 설정
-
-```
-OPENAI_API_KEY=your_openai_api_key_here
-```
-
-## 사용 방법
-
-1. Streamlit 앱 실행
-
-```bash
-streamlit run main.py
-```
-
-2. 웹 브라우저에서 앱 접속 (기본: http://localhost:8501)
-
-3. 단계별로 선택하여 맞춤형 추천 받기:
-    - 지역 입력
-    - 맛/질감 선택
-    - 음식 장르 선택
-    - 조리방식 선택
-    - 추천 결과 확인
 
 ## 디렉토리 구조
 

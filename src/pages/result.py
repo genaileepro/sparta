@@ -1,8 +1,8 @@
 import streamlit as st
 import os
 from openai import OpenAI
-from services.gpt_client import GPTClient
-from utils.session_state import get_tokens
+from src.services.gpt_client import GPTClient
+from src.utils.session_state import get_tokens
 
 def generate_food_image(food_name):
     """OpenAI DALL-E API를 사용하여 음식 이미지를 생성합니다."""
