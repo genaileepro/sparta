@@ -34,7 +34,25 @@ class GPTClient:
         if not self.api_key:
             raise RuntimeError("OPENAI_API_KEY 누락")
         self.model = model
-        self.client = OpenAI(api_key=self.api_key)
+        
+        # proxies 매개변수 문제 해결을 위한 초기화 방식 변경
+        try:
+            # 환경 변수에서 프록시 설정을 제거하여 클라이언트 초기화
+            http_proxy = os.environ.pop('HTTP_PROXY', None)
+            https_proxy = os.environ.pop('HTTPS_PROXY', None)
+            
+            # 기본 매개변수만으로 클라이언트 초기화
+            self.client = OpenAI(api_key=self.api_key)
+            
+            # 환경 변수 복원 (필요한 경우)
+            if http_proxy:
+                os.environ['HTTP_PROXY'] = http_proxy
+            if https_proxy:
+                os.environ['HTTPS_PROXY'] = https_proxy
+        except Exception as e:
+            print(f"OpenAI 클라이언트 초기화 중 오류: {e}")
+            # 대체 초기화 방법 시도
+            self.client = OpenAI(api_key=self.api_key)
 
     # ------------------------------------------------------------------ #
     def recommend(self, tokens: Dict[str, str]) -> Dict:
