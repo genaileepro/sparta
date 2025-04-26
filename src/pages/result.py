@@ -2,6 +2,7 @@ import streamlit as st
 import time
 from src.utils.session_state import update_step, get_tokens, reset_tokens
 from src.services.gpt_client import GPTClient
+import os
 
 def show():
     """결과 페이지 표시 (GPT 기반 추천)"""
@@ -10,20 +11,39 @@ def show():
     tokens = get_tokens()
     st.info(f"선택: {tokens['region']} → {tokens['taste']} → {tokens['cuisine']} → {tokens['cook']}")
     
+    # API 키 확인
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        st.error("OpenAI API 키가 설정되지 않았습니다. '.env' 파일을 만들고 다음과 같이 키를 설정하세요:")
+        st.code("OPENAI_API_KEY=your_openai_api_key_here")
+        
+        # 이전 단계로 돌아가는 버튼
+        if st.button("이전 화면으로 돌아가기"):
+            update_step("select_cook")
+            st.rerun()
+        return
+    
     # 추천 결과 캐싱 상태 확인
     if "recommendation_result" not in st.session_state:
         with st.spinner("맛있는 음식을 찾고 있어요..."):
-            # GPT 클라이언트 생성
-            gpt_client = GPTClient()
-            
-            # 결과 생성 (시간 측정)
-            start_time = time.time()
-            result = gpt_client.generate_recommendation(tokens)
-            elapsed_time = time.time() - start_time
-            
-            # 결과 저장
-            st.session_state["recommendation_result"] = result
-            st.session_state["recommendation_time"] = elapsed_time
+            try:
+                # GPT 클라이언트 생성
+                gpt_client = GPTClient()
+                
+                # 결과 생성 (시간 측정)
+                start_time = time.time()
+                result = gpt_client.generate_recommendation(tokens)
+                elapsed_time = time.time() - start_time
+                
+                # 결과 저장
+                st.session_state["recommendation_result"] = result
+                st.session_state["recommendation_time"] = elapsed_time
+            except Exception as e:
+                st.error(f"추천 생성 중 오류가 발생했습니다: {str(e)}")
+                if st.button("이전 화면으로 돌아가기"):
+                    update_step("select_cook")
+                    st.rerun()
+                return
     
     # 결과 표시
     result = st.session_state["recommendation_result"]

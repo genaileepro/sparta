@@ -1,62 +1,129 @@
+"""
+gpt_client.py
+
+음식 이름 3개를 GPT-4o에 요청한 뒤
+<지역 + 음식명> 조합으로 네이버 지도 검색 URL을 만들어 반환합니다.
+"""
+
+from __future__ import annotations
+
 import os
-import streamlit as st
+import urllib.parse
+from pprint import pprint
+from typing import Dict, List
+
 from openai import OpenAI
 
+
 class GPTClient:
-    def __init__(self):
-        # OpenAI API 키 설정
-        self.api_key = os.getenv("OPENAI_API_KEY")
+    """
+    ▸ 필수 환경변수 : OPENAI_API_KEY  
+    ▸ 사용 예시
+        >>> client = GPTClient()
+        >>> result = client.recommend({
+        ...     "region":  "강남구 봉은사역",
+        ...     "taste":   "매콤한",
+        ...     "cuisine": "중식",
+        ...     "cook":    "볶음",
+        ...     "emotion": "스트레스를 풀고 싶다"   # optional
+        ... })
+    """
+
+    def __init__(self, api_key: str | None = None, model: str = "gpt-4o-mini") -> None:
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self.api_key:
-            st.error("OpenAI API 키가 설정되지 않았습니다. '.env' 파일을 확인하세요.")
-        
-        # OpenAI 클라이언트 초기화
+            raise RuntimeError("OPENAI_API_KEY 누락")
+        self.model = model
         self.client = OpenAI(api_key=self.api_key)
-    
-    def generate_recommendation(self, tokens):
+
+    # ------------------------------------------------------------------ #
+    def recommend(self, tokens: Dict[str, str]) -> Dict:
         """
-        사용자 선택 키워드(토큰)를 기반으로 음식과 식당 추천 생성
-        
-        Parameters:
-        - tokens: 키워드 딕셔너리 (region, taste, cuisine, cook)
-        
-        Returns:
-        - 음식 및 식당 추천 정보 딕셔너리
+        Parameters
+        ----------
+        tokens : dict
+            {
+                "region" : "강남구 봉은사역",
+                "taste"  : "매콤한",
+                "cuisine": "중식",
+                "cook"   : "볶음",
+                "emotion": "스트레스를 풀고 싶다"  # optional
+            }
+
+        Returns
+        -------
+        dict
+            {
+              "region": "...",
+              "keywords": {...},
+              "foods": [
+                 {"food": "마라샹궈", "map_url": "..."},
+                 ...
+              ]
+            }
         """
+        foods = self._ask_gpt(tokens)
+        if not foods:
+            return {"error": "GPT 추천 실패"}
+
+        results: List[Dict[str, str]] = []
+        for food in foods:
+            query = urllib.parse.quote_plus(f"{tokens['region']} {food}")
+            map_url = f"https://map.naver.com/v5/search/{query}"
+            results.append({"food": food, "map_url": map_url})
+
+        return {
+            "region": tokens["region"],
+            "keywords": tokens,
+            "foods": results,
+        }
+
+    # ------------------------------------------------------------------ #
+    def _ask_gpt(self, t: Dict[str, str]) -> List[str]:
+        """GPT-4o 호출 → 음식 이름 3개 리스트 반환"""
+        system_msg = (
+            "너는 한국의 맛집·음식 추천 전문가야. "
+            "사용자의 조건에 맞는 음식 이름만 3줄로 추천해."
+        )
+
+        user_lines = [
+            f"지역: {t['region']}",
+            f"맛/질감: {t['taste']}",
+            f"음식 장르: {t['cuisine']}",
+            f"조리 방식: {t['cook']}",
+        ]
+        if t.get("emotion"):
+            user_lines.append(f"감정: {t['emotion']}")
+        user_lines.append("\n조건에 가장 어울리는 음식 세 가지를 음식 이름만 줄바꿈해서 알려줘.")
+
         try:
-            # 프롬프트 생성
-            prompt = self._build_prompt(tokens)
-            
-            # GPT API 호출
-            response = self.client.chat.completions.create(
-                model="gpt-4o",  # 또는 "gpt-4"
+            resp = self.client.chat.completions.create(
+                model=self.model,
                 messages=[
-                    {"role": "system", "content": "당신은 맛집 추천 전문가입니다. 사용자의 선호에 맞는 음식과 식당을 추천해주세요."},
-                    {"role": "user", "content": prompt}
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": "\n".join(user_lines)},
                 ],
                 temperature=0.7,
-                max_tokens=800
             )
-            
-            # 응답 텍스트 추출
-            recommendation_text = response.choices[0].message.content
-            
-            # 파싱 (단순화를 위해 텍스트 그대로 반환)
-            return {
-                "text": recommendation_text,
-                "raw_response": response
-            }
-            
-        except Exception as e:
-            st.error(f"GPT API 호출 중 오류가 발생했습니다: {str(e)}")
-            return {
-                "text": "추천을 생성하는 중 오류가 발생했습니다. 다시 시도해주세요.",
-                "error": str(e)
-            }
-    
-    def _build_prompt(self, tokens):
-        """
-        토큰을 기반으로 프롬프트 생성
-        """
-        return (f"{tokens['region']} 근처에서 {tokens['taste']} {tokens['cuisine']} "
-                f"{tokens['cook']} 요리를 판매하는 식당 3곳을 추천해줘. "
-                "각 식당의 추천 메뉴와 주소를 함께 알려주고, 왜 이 식당을 추천하는지 짧게 설명해줘.") 
+            answer = resp.choices[0].message.content.strip()
+            return [line.strip() for line in answer.splitlines() if line.strip()]
+        except Exception as exc:
+            print(f"[GPT ERROR] {exc}")
+            return []
+
+
+# ---------------------------------------------------------------------- #
+# CLI 테스트용 스크립트 실행
+# ---------------------------------------------------------------------- #
+if __name__ == "__main__":
+    sample_tokens = {
+        "region": "강남구 봉은사역",
+        "taste": "매콤한",
+        "cuisine": "중식",
+        "cook": "볶음",
+        "emotion": "스트레스를 풀고 싶다",
+    }
+
+    client = GPTClient()
+    result = client.recommend(sample_tokens)
+    pprint(result)

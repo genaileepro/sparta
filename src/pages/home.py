@@ -4,10 +4,6 @@ from src.utils.session_state import update_step, add_token, get_tokens
 def show():
     """홈 페이지 표시 (지역 입력)"""
     
-    # 디버깅용: 현재 세션 상태 표시
-    st.write(f"현재 단계: {st.session_state.get('current_step', '정보 없음')}")
-    st.write("현재 토큰:", get_tokens())
-    
     st.write("🌏 어느 지역에서 음식을 찾고 계신가요?")
     
     # 지역 입력 필드
@@ -26,8 +22,7 @@ def show():
         # 지역 정보 저장
         add_token("region", region)
         
-        # 다음 단계로 이동 (디버깅 메시지 추가)
-        st.write(f"다음 단계로 이동 시도: select_taste")
+        # 다음 단계로 이동
         update_step("select_taste")
         st.rerun()
     
